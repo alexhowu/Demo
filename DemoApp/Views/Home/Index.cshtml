@@ -6,3 +6,81 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.common.min.css" />
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.default.min.css" />
+
+<div id="stockChart"></div>
+
+@section Scripts {
+    <script src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#stockChart").kendoStockChart({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "/api/stockdata",
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                date: { type: "date" },
+                                open: { type: "number" },
+                                high: { type: "number" },
+                                low: { type: "number" },
+                                close: { type: "number" },
+                                volume: { type: "number" }
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: "candlestick",
+                    openField: "open",
+                    highField: "high",
+                    lowField: "low",
+                    closeField: "close"
+                }],
+                categoryAxis: {
+                    field: "date",
+                    labels: {
+                        rotation: -45
+                    }
+                },
+                valueAxis: {
+                    labels: {
+                        format: "{0:c}"
+                    }
+                }
+            });
+        });
+        
+    </script>
+}
+
+@{
+    var stockSymbols = new List<string> { "AAPL", "GOOGL", "MSFT", "AMZN" };
+}
+
+<div>
+    <label for="stockSymbol">Select Stock Symbol:</label>
+    <select id="stockSymbol" name="stockSymbol">
+        @foreach (var symbol in stockSymbols)
+        {
+            <option value="@symbol">@symbol</option>
+        }
+    </select>
+</div>
+
+<button onclick="refreshData()">Refresh Data</button>
+
+<script>
+    function refreshData() {
+        var stockSymbol = $("#stockSymbol").val();
+        var chart = $("#stockChart").data("kendoStockChart");
+        chart.dataSource.read({ symbol: stockSymbol });
+    }
+</script>
